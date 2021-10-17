@@ -21,7 +21,7 @@ public class EvaluationDockerMatcher {
 
         // running the matcher on any task
         //ExecutionResultSet ers = Executor.run(TrackRepository.Conference.V1.getFirstTestCase(), matcher);
-        ExecutionResultSet ers = Executor.run(TrackRepository.Conference.V1.getFirstTestCase(), dockerMatcher);
+        ExecutionResultSet ers = Executor.run(TrackRepository.Anatomy.Default, dockerMatcher);
 
         Thread.sleep(20000); // just to be sure that all logs are written.
         dockerMatcher.logAllLinesFromContainer();  // this will output the log of the container

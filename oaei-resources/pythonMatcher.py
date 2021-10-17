@@ -26,7 +26,7 @@ def match_rdflib(source_graph, target_graph, input_alignment, synonymFile):
     graphTarget = target_graph
     # reference = referenceFile
 #     synonymFile = "oaei-resources/Synonym Anatomy.json"
-    thresholdValue = 0.95
+    thresholdValue = 1
 
     sourceClassNames = []
     targetClassNames = []
@@ -134,14 +134,25 @@ def match_rdflib(source_graph, target_graph, input_alignment, synonymFile):
         #s2 = "head and neck muscle"
         s2 = s2.split()
         s2 = [word for word in s2 if word not in stopWords]
-        s2 = " ".join(s2)
+#         s2 = " ".join(s2)
         #print(s2)
 
+        s1 = s1.split()
+        s1 = [word for word in s1 if word not in stopWords]
+#         s1 = " ".join(s1)
+
+        score = 0
+        for name in s2:
+            for concept in s1:
+                if name in synonym_dict[concept]:
+                    score += 100
+                    break
+        return (score/(len(s2)))
         #for s in s2: not required or wrong
 
-        if s2 in synonym_dict[s1]:
-            score = 100
-        return score
+#         if s2 in synonym_dict[s1]:
+#             score = 100
+#         return score
 
     # Calculating Score
     pairFound = dict()
@@ -150,13 +161,18 @@ def match_rdflib(source_graph, target_graph, input_alignment, synonymFile):
     total = len(sourceClassNames)
     i = 0
     for sC in sourceClassNames:
-        print(str(i) + "/"+ str(total))
+#         print(str(i) + "/"+ str(total))
         i += 1
         for tC in targetClassNames:
             ''' Comented because i don't need exact class match now '''
             #sC, tC = sClass.lower().replace('_', ' ').replace('/', ' '), tClass.lower().replace('_', ' ').replace('/', ' ')
             score = Levenshtein.ratio(sC, tC) * 100
             #score = fuzz.ratio(sC, tC)
+
+#           I should try it like this
+#             if score < 0.5:
+#                 score = get_similarity(sC, tC)
+#
             score += get_similarity(sC, tC)
             score = score/200
             if score >= 0.5:
@@ -224,19 +240,6 @@ def match(source_url, target_url, input_alignment_url):
 
 #     print("source" + source_url)
 
-    if "anatomy" in source_url or "human-mouse" in source_url:
-        synonymFile = "oaei-resources/Synonym_Anatomy.json"
-    elif "hp-mp" in source_url or "HP-MP" in source_url:
-        synonymFile = "oaei-resources/Synonym_HP-MP.json"
-    elif "doid-ordo" in source_url or "DOID-ORDO" in source_url:
-        synonymFile = "oaei-resources/Synonym_DOID-ORDO.json"
-    elif "flopo-pto" in source_url:
-        synonymFile = "oaei-resources/Synonym_flopo-pto.json"
-    elif "Conference" in source_url or "conference" in source_url:
-        synonymFile = "oaei-resources/Synonym_Conference.json"
-    elif "envo-sweet" in source_url:
-        synonymFile = "oaei-resources/Synonym_Envo-Sweet.json"
-
     source_graph = Graph()
     source_graph.parse(source_url)
     logging.info("Read source with %s triples.", len(source_graph))
@@ -245,8 +248,36 @@ def match(source_url, target_url, input_alignment_url):
     target_graph.parse(target_url)
     logging.info("Read target with %s triples.", len(target_graph))
 
+
+    synonymFile = ""
+
+    for sub, obj in source_graph.subject_objects(predicate = rdflib.term.URIRef('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')):
+#         print(sub)
+
+        conferenceList = ['cmt', 'conference', 'confOf', 'edas', 'ekaw', 'iasted', 'sigkdd']
+
+        if "mouse" in sub or "human" in sub:
+            synonymFile = "oaei-resources/Synonym Anatomy (single word synonyms).json"
+            break
+        elif "HP" in sub or "MP" in sub:
+            synonymFile = "oaei-resources/Synonym_HP-MP.json"
+            break
+        elif "DOID" in sub or "ORDO" in sub:
+            synonymFile = "oaei-resources/Synonym_DOID-ORDO.json"
+            break
+        elif "FLOPO_" in sub or "TO_" in sub:
+            synonymFile = "oaei-resources/Synonym_flopo-pto.json"
+            break
+        elif any(conferenceTag in sub for conferenceTag in conferenceList):
+            synonymFile = "oaei-resources/Synonym_Conference.json"
+            break
+        elif "ENVO_" in sub or "sweetontology" in sub:
+            synonymFile = "oaei-resources/Synonym_Envo-Sweet.json"
+            break
+
     input_alignment = None
     # if input_alignment_url is not None:
+
 
     resulting_alignment = match_rdflib(source_graph, target_graph, input_alignment, synonymFile)
 
