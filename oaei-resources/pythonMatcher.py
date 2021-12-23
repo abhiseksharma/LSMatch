@@ -26,7 +26,7 @@ def match_rdflib(source_graph, target_graph, input_alignment, synonymFile):
     graphTarget = target_graph
     # reference = referenceFile
 #     synonymFile = "oaei-resources/Synonym Anatomy.json"
-    thresholdValue = 1
+    thresholdValue = 0.95
 
     sourceClassNames = []
     targetClassNames = []
@@ -112,9 +112,9 @@ def match_rdflib(source_graph, target_graph, input_alignment, synonymFile):
     if synonymFile != "":
         f = open(synonymFile)
         synonym_dict = json.load(f)
-    else:
-        synonym_dict = dict()
-    creating_synonym_dict(sourceClassNames)
+#     else:
+#         synonym_dict = dict()
+#     creating_synonym_dict(sourceClassNames)
 
     # Applying similarity measures
 
@@ -144,8 +144,8 @@ def match_rdflib(source_graph, target_graph, input_alignment, synonymFile):
         score = 0
         for name in s2:
             for concept in s1:
-                if name in synonym_dict[concept]:
-                    score += 100
+                if name == concept or name in synonym_dict[concept]:
+                    score += 1
                     break
         return (score/(len(s2)))
         #for s in s2: not required or wrong
@@ -166,15 +166,15 @@ def match_rdflib(source_graph, target_graph, input_alignment, synonymFile):
         for tC in targetClassNames:
             ''' Comented because i don't need exact class match now '''
             #sC, tC = sClass.lower().replace('_', ' ').replace('/', ' '), tClass.lower().replace('_', ' ').replace('/', ' ')
-            score = Levenshtein.ratio(sC, tC) * 100
+            score = Levenshtein.ratio(sC, tC) # * 100
             #score = fuzz.ratio(sC, tC)
-
+            if score < 0.95:
 #           I should try it like this
 #             if score < 0.5:
 #                 score = get_similarity(sC, tC)
 #
-            score += get_similarity(sC, tC)
-            score = score/200
+                score = get_similarity(sC, tC)
+#                 score = score/200
             if score >= 0.5:
                 pairFound[tuple((sC, tC))] =  score
             # if score >= threshold:

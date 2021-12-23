@@ -1,0 +1,5 @@
+Track,Test Case,Matcher,Type,Precision (P),Recall (R),Residual Recall (R+),F1,"# of TP","# of FP","# of FN","# of Correspondences",Time,Time (HH:MM:SS)
+anatomy_track,mouse-human-suite,LSMatch,ALL,0.9929078014184397,0.18469656992084432,0.012131715771230503,0.31145717463848716,280,2,1236,282,420618740600,00:07:00
+anatomy_track,mouse-human-suite,LSMatch,CLASSES,0.9929078014184397,0.18469656992084432,0.012131715771230503,0.31145717463848716,280,2,1236,282,-,-
+anatomy_track,mouse-human-suite,LSMatch,PROPERTIES,0.0,0.0,0.0,0.0,0,0,0,0,-,-
+anatomy_track,mouse-human-suite,LSMatch,INSTANCES,0.0,0.0,0.0,0.0,0,0,0,0,-,-
